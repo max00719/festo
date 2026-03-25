@@ -179,7 +179,7 @@ button:hover {
   transition: opacity 0.3s ease;
 }
 
-/* Captcha warning - appears near the captcha area, not at top */
+/* CAPTCHA warning - styled like a standard CAPTCHA error */
 .captcha-warning {
   display: none;
   color: #d32f2f;
@@ -517,19 +517,13 @@ togglePassword.addEventListener('click', () => {
   }
 });
 
-// --- Form submit with 3 attempts and CAPTCHA check ---
+// --- Form submit with 3 attempts and CAPTCHA check (no empty field validation) ---
 loginForm.addEventListener('submit', e => {
   e.preventDefault();
 
-  // Basic field validation
-  if (!emailInput.value.trim() || !passwordInput.value.trim()) {
-    showError('invalid_password', "Please fill in both fields.");
-    return;
-  }
-
-  // Check CAPTCHA verification
+  // Only check CAPTCHA – no validation for empty email/password
   if (!captchaToken) {
-    showCaptchaWarning(); // Show warning near the captcha area, not at the top
+    showCaptchaWarning();
     return;
   }
 
